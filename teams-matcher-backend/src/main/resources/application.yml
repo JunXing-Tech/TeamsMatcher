@@ -1,0 +1,48 @@
+# Spring Boot配置
+spring:
+  application:
+    name: teams-matcher-backend
+  # MySQL配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/teams_matcher
+    username: root
+    password: Mysql08junxing
+  # session配置
+  session:
+    # session过期时间
+    timeout: 86400
+    # 使用redis存储session
+    store-type: redis
+  # 匹配策略
+  mvc:
+    path match:
+      matching-strategy: ANT_PATH_MATCHER
+  # 环境配置
+  profiles:
+    active: dev
+  # redis配置
+  redis:
+    port: 6379
+    host: localhost
+    database: 0
+
+# 网络接口配置
+server:
+  port: 8080
+  # 配置上下文路径
+  servlet:
+    context-path: /api
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    # 开启 SQL 日志记录
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-value: 1 # 逻辑已删除值（默认 1）
+      logic-not-delete-value: 0 # 逻辑未删除值（默认 0）
+
