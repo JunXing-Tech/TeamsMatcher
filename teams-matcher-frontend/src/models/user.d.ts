@@ -16,4 +16,5 @@ export type UserType = {
     userRole: number; // 用户的角色，例如：0（普通用户）、1（管理员）
     tags: string[]; // 用户的标签，用于分类或搜索
     createTime: Date; // 用户创建的时间
+    
 };
