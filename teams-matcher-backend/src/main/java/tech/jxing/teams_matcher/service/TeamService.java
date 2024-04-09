@@ -2,6 +2,7 @@ package tech.jxing.teams_matcher.service;
 
 import tech.jxing.teams_matcher.model.domain.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
+import tech.jxing.teams_matcher.model.domain.User;
 
 /**
 * @author JunXing
@@ -9,5 +10,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @createDate 2024-04-09 10:15:44
 */
 public interface TeamService extends IService<Team> {
-
+    
 }
