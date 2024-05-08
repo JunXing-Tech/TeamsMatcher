@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import tech.jxing.teams_matcher.common.PageRequest;
 
+import java.util.List;
+
 /**
  * 队伍查询封装类
  * @EqualsAndHashCode(callSuper = true) 是Lombok的一个注解，用于生成equals和hashCode方法
@@ -15,14 +17,24 @@ import tech.jxing.teams_matcher.common.PageRequest;
 @Data
 public class TeamQuery extends PageRequest {
     /**
-     * id
+     * 队伍id
      */
     private Long id;
+
+    /**
+     * id 列表
+     */
+    private List<Long> idList;
 
     /**
      * 队伍名称
      */
     private String name;
+
+    /**
+     * 搜索关键词（同时搜索队伍名称和描述）
+     */
+    private String searchText;
 
     /**
      * 描述

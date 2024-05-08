@@ -3,6 +3,7 @@ import {useRoute} from "vue-router";
 import {onMounted, ref} from "vue";
 import myAxios from "../plugins/myAxios"
 import qs from "qs";
+import {showFailToast} from "vant";
 
 // 使用useRoute获取当前路由信息
 const route = useRoute();
@@ -25,12 +26,11 @@ onMounted(async () => {
   })
       .then(function (response) {
         console.log('user/search/tags succeed', response);
-        // showSuccessToast('请求成功')
         return response?.data;
       })
       .catch(function (error) {
         console.log('user/search/tags error', error);
-        // showFailToast('请求失败')
+        showFailToast('请求失败')
       })
   // 请求成功后，解析并更新用户列表
   if(userListDate) {

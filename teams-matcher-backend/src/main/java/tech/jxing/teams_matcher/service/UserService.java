@@ -2,6 +2,7 @@ package tech.jxing.teams_matcher.service;
 
 import tech.jxing.teams_matcher.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import tech.jxing.teams_matcher.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -82,4 +83,12 @@ public interface UserService extends IService<User> {
      * @return 是否为管理员
      */
     boolean isAdmin(User loginUser);
+
+    /**
+     * 匹配用户列表
+     * @param num 指定匹配的用户数量
+     * @param user 登录的用户信息
+     * @return 返回匹配的用户列表
+     */
+    List<User> matchUsers(long num, User user);
 }

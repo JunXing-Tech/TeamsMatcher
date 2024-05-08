@@ -1,7 +1,7 @@
 <template>
   <!--  添加 Vant3 NavBar导航栏组件-->
   <van-nav-bar
-      title="标题"
+      :title="title"
       left-text="返回"
       right-text="按钮"
       left-arrow
@@ -29,9 +29,26 @@
 </template>
 
 <script setup>
-  import {useRouter} from "vue-router"
+import {useRoute, useRouter} from "vue-router"
+  import {ref} from "vue";
+  import routes from "../config/route.ts";
 
   const router = useRouter();
+  const route = useRoute();
+  const DEFAULT_TITLE = 'TeamsMatcher';
+  const title = ref(DEFAULT_TITLE);
+
+/**
+ * 根据路由切换页面标题
+ */
+router.beforeEach((to, from) => {
+    const toPath = to.path;
+    const route = routes.find((route) => {
+      return toPath === route.path;
+    })
+    title.value = route?.title ?? DEFAULT_TITLE;
+  })
+
   const onClickLeft = () => {
     router.back();
   }

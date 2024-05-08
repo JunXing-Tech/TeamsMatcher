@@ -8,18 +8,26 @@
    */
   interface UserCardListProps {
     userList: UserType[];
+    loading: boolean;
   }
   // 使用withDefaults函数为组件的props定义默认值
   const props = withDefaults(defineProps<UserCardListProps>(), {
+    loading: true,
     // @ts-ignore
     userList: [] as UserType[]
   });
 </script>
 
 <template>
+  <!-- 使用van-skeleton组件来展示加载时的骨架屏 -->
+  <van-skeleton
+      title
+      avatar
+      :row="3"
+      :loading="props.loading"
+      v-for="user in props.userList">
   <!-- 使用van-card组件来展示用户信息列表 -->
   <van-card
-      v-for="user in props.userList"
       :desc="user.profile"
       :title="user.username"
       :thumb="user.avatarUrl"
@@ -35,6 +43,7 @@
       <van-button size="mini">联系我</van-button>
     </template>
   </van-card>
+  </van-skeleton>
 </template>
 
 <style scoped>

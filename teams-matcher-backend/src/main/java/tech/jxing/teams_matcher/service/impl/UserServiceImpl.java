@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.util.Pair;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 import tech.jxing.teams_matcher.common.ErrorCode;
@@ -14,13 +15,11 @@ import tech.jxing.teams_matcher.exception.BusinessException;
 import tech.jxing.teams_matcher.service.UserService;
 import tech.jxing.teams_matcher.mapper.UserMapper;
 import org.springframework.stereotype.Service;
+import tech.jxing.teams_matcher.utils.AlgorithmUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,16 +28,16 @@ import static tech.jxing.teams_matcher.constant.UserConstant.ADMIN_ROLE;
 import static tech.jxing.teams_matcher.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
-* @author JunXing
-* @description 针对表【user.sql(用户)】的数据库操作Service实现
-* @createDate 2024-04-09 10:31:08
-*/
+ * @Resource 注解可以指定要注入的组件或资源的名称或类型，更加灵活地控制注入行为
+ * @author JunXing
+ * @description 针对表【user.sql(用户)】的数据库操作Service实现
+ * @createDate 2024-04-09 10:31:08
+ */
 @Service
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
-    /** @Resource注解可以指定要注入的组件或资源的名称或类型，更加灵活地控制注入行为 */
     private UserMapper userMapper;
 
     /**
@@ -46,17 +45,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     final static String SALT = "junxing";
 
+    /**
+     StringUtils.isAnyBlank是Apache Commons Lang库中的一个方法
+     用于检查给定的字符串数组中是否有任何一个字符串为null、空字符串或者只包含空格
+     如果数组中有任何一个字符串满足上述条件，则返回true，否则返回false。
+     */
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
 
-        /** 校验用户的账户、密码、校验密码，是否符合要求 */
+        // 校验用户的账户、密码、校验密码，是否符合要求
         // 非空
         if(StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)){
-            /**
-              StringUtils.isAnyBlank是Apache Commons Lang库中的一个方法
-              用于检查给定的字符串数组中是否有任何一个字符串为null、空字符串或者只包含空格
-              如果数组中有任何一个字符串满足上述条件，则返回true，否则返回false。
-             */
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         // 账户长度不小于 4 位
@@ -83,17 +82,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(count > 0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
         }
-        /** 密码加密 */
+        // 密码加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
-        /** 插入数据 */
+        // 插入数据
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         boolean saveResult = this.save(user);
-        if(!saveResult){ // 非空判断
+        // 非空判断
+        if(!saveResult){
             return -1;
         }
-        return user.getId(); // 返回用户 id
+        // 返回用户 id
+        return user.getId();
     }
 
     @Override
@@ -137,8 +138,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 用户脱敏
-     * @param originUser
-     * @return
+     * @param originUser 原始用户信息
+     * @return 用户脱敏信息
      */
     @Override
     public User getSafetyUser(User originUser){
@@ -175,7 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 根据标签搜索用户 [内存查询]
      *
      * @param tagNameList 用户拥有的标签
-     * @return
+     * @return 符合标签的用户
      */
     @Override
     public List<User> searchUserByTags(List<String> tagNameList) {
@@ -269,6 +270,82 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean isAdmin(User loginUser) {
         return loginUser != null && loginUser.getUserRole() == ADMIN_ROLE;
+    }
+
+    /**
+     * 根据登录用户的标签，返回匹配度最高的前num个用户
+     *
+     * @param num 需要返回的匹配用户数量
+     * @param loginUser 当前登录用户，用于提取标签进行匹配
+     * @return 匹配度最高的前num个用户
+     */
+    @Override
+    public List<User> matchUsers(long num, User loginUser) {
+        // 设置查询条件，只查询标签不为空的用户
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id", "tags");
+        queryWrapper.isNotNull("tags");
+        // 获取所有用户列表
+        List<User> userList = this.list(queryWrapper);
+        // 获取登录用户的标签，并转换为列表
+        String tags = loginUser.getTags();
+        Gson gson = new Gson();
+        List<String> tagsList = gson.fromJson(tags, new TypeToken<List<String>>(){}.getType());
+
+        List<Pair<User, Long>> list = new ArrayList<>();
+
+        // 计算所有用户与登录用户的标签匹配度
+        for (int i = 0; i < userList.size(); i++) {
+            User user = userList.get(i);
+            String userTags = user.getTags();
+            // 跳过没有标签的用户和当前登录用户
+            if(StringUtils.isBlank(userTags) || user.getId().equals(loginUser.getId())) {
+                continue;
+            }
+            // 将用户标签转换为列表进行匹配度计算
+            List<String> userTagsList = gson.fromJson(userTags, new TypeToken<List<String>>(){}.getType());
+            // 计算当前用户与登录用户的标签匹配度
+            long distance = AlgorithmUtils.miniDistance(tagsList, userTagsList);
+            // 保存匹配用户的用户信息和匹配度到list中
+            list.add(new Pair<>(user, distance));
+        }
+        // 根据匹配度排序，选择前num个匹配度最高的用户
+        List<Pair<User, Long>> topUserPairList = list.stream()
+                /**
+                 * 若差值为正数，表示a.getValue()大于b.getValue()，此时a应排在b后面；
+                 * 若差值为负数，表示a.getValue()小于b.getValue()，此时a应排在b前面；
+                 */
+                .sorted((a, b) -> (int)(a.getValue() - b.getValue()))
+                .limit(num)
+                .collect(Collectors.toList());
+        // 原本顺序的 userId 列表
+        // 获取最终需要返回的用户ID列表
+        List<Long> userIdList = topUserPairList.stream()
+                .map(pair -> pair.getKey().getId())
+                .collect(Collectors.toList());
+        // 根据用户ID列表查询用户信息，确保用户数据完整
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper();
+        userQueryWrapper.in("id", userIdList);
+        /**
+         * 根据用户查询条件，生成一个映射表，其键为用户ID，值为对应ID的用户列表。
+         * 这个方法首先根据用户查询条件查询用户列表，然后对每个用户应用getSafetyUser方法进行处理，
+         * 最后将处理后的用户按其ID进行分组，生成一个映射表
+         */
+        Map<Long, List<User>> userIdUserListMap = this.list(userQueryWrapper).stream()
+                .map(user -> getSafetyUser(user))
+                .collect(Collectors.groupingBy(User::getId));
+        /**
+         * 根据用户ID列表，从映射中检索用户并构建一个最终用户列表。
+         *
+         * @param userIdList 用户ID的列表，这些ID用于从映射中检索用户。
+         * @param userIdUserListMap 一个映射，其中键是用户ID，值是与该ID相关联的用户列表。
+         * @return finalUserList 包含从映射中检索到的用户的列表。每个用户是根据给定的用户ID列表中的ID从映射中获取的第一个用户。
+         */
+        List<User> finalUserList = new ArrayList<>();
+        for (Long userId : userIdList) {
+            finalUserList.add(userIdUserListMap.get(userId).get(0));
+        }
+        return finalUserList;
     }
 }
 

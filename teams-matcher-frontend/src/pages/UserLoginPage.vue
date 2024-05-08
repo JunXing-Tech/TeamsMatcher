@@ -2,10 +2,9 @@
   import {ref} from "vue";
   import myAxios from "../plugins/myAxios.ts";
   import {showFailToast, showSuccessToast} from "vant";
-  import {useRouter} from "vue-router";
+  import {useRoute} from "vue-router";
 
-  // 使用useRouter获取路由实例
-  const router = useRouter();
+  const route = useRoute();
 
   // 声明两个响应式变量用于存储用户账号和密码
   const userAccount = ref('');
@@ -21,7 +20,9 @@
      console.log(res, "用户登录");
     if(res.code === 0 && res.data) {
       showSuccessToast('登录成功');
-      router.replace('/');
+      // 跳转到登录前的页面
+      const redirectUrl = route.query?.redirect as string ?? '/';
+      window.location.href = redirectUrl;
     } else {
       showFailToast('登录失败');
     }

@@ -15,6 +15,7 @@ import tech.jxing.teams_matcher.model.domain.User;
 import tech.jxing.teams_matcher.model.request.UserLoginRequest;
 import tech.jxing.teams_matcher.model.request.UserRegisterRequest;
 import tech.jxing.teams_matcher.exception.BusinessException;
+import tech.jxing.teams_matcher.model.vo.UserVO;
 import tech.jxing.teams_matcher.service.UserService;
 
 import javax.annotation.Resource;
@@ -30,7 +31,8 @@ import static tech.jxing.teams_matcher.constant.UserConstant.USER_LOGIN_STATE;
  * @author JunXing
  * @RestController 表示该类是一个控制器类，所有的处理方法的返回结果都直接写入HTTP响应体中，而不是跳转到视图页面
  * @RequestMapping 表示该控制器处理的URL路径的公共部分，即所有的请求路径都以"/user"开头
- * @CrossOrigin(origins = {"http://localhost:5173"}) 表示允许跨域访问，允许的请求来源是"http://localhost:5173"
+ * @CrossOrigin(origins={"http://localhost:5173"}) 表示允许跨域访问，允许的请求来源是"http://localhost:5173"
+ * @RequestBody 注解将请求体中的数据绑定到User对象上，可以直接在方法中获取到请求体中的数据，并进行相应的处理
  * 用户接口 - 控制层封装请求
  */
 @RestController
@@ -46,7 +48,6 @@ public class UserController {
     private RedisTemplate<String, Object> redisTemplate;
 
     @PostMapping("/register") // 表示将HTTP POST请求映射到处理方法上，处理的路径是"/user/register"。
-    // @RequestBody注解将请求体中的数据绑定到User对象上，可以直接在方法中获取到请求体中的数据，并进行相应的处理
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest){
         //对请求体进行了空值和空字符串的校验
         if(userRegisterRequest == null){
@@ -237,4 +238,20 @@ public class UserController {
         boolean b = userService.removeById(id);
         return ResultUtils.success(b);
     }
+
+    /**
+     * 获取最匹配的TOP N 用户
+     * @param num 指定匹配的用户数量
+     * @param request 用户的请求对象，用于获取当前登录的用户信息
+     * @return 返回最匹配的用户列表
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if(num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        return ResultUtils.success(userService.matchUsers(num, user));
+    }
+
 }
