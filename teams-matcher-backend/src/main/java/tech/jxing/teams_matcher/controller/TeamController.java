@@ -38,7 +38,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/team")
-@CrossOrigin(origins = {"http://localhost:5173"})
+// TODO @CrossOrigin(origins = {"http://1.12.221.240:5173"})
+@CrossOrigin(origins={"http://localhost:5173"})
 @Slf4j
 public class TeamController {
 
@@ -193,7 +194,6 @@ public class TeamController {
         return ResultUtils.success(teamList);
     }
 
-    // TODO 分页查询队伍列表
     /**
      * 分页查询队伍列表
      *

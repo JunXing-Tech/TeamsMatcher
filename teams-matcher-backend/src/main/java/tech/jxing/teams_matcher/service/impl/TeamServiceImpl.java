@@ -117,7 +117,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "超时时间不满足要求");
         }
         // 3.7 校验用户最多创建 5 个队伍
-        // TODO 有BUG 用户可能同时创建 100 个队伍
         QueryWrapper<Team> queryWrapper = new QueryWrapper<>();
         final long userId = loginUser.getId();
         // 设置查询条件，查询与当前用户ID匹配的队伍
@@ -284,7 +283,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements Te
         return this.updateById(updateTeam);
     }
 
-    // TODO 在短时间内多次加入队伍，可能导致重复加入队伍问题，可用锁来解决
     /**
      * 用户加入队伍
      *

@@ -5,9 +5,10 @@ spring:
   # MySQL配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/teams_matcher
-    username: root
-    password: Mysql08junxing
+    # url: jdbc:mysql://localhost:3306/teams_matcher
+    url: jdbc:mysql://1.12.221.240:3306/teams_matcher
+    username: jxing
+    password: zjxteamsr
   # session配置
   session:
     # session过期时间
@@ -24,8 +25,9 @@ spring:
   # redis配置
   redis:
     port: 6379
-    host: localhost
+    host: 1.12.221.240
     database: 0
+    password: zjxredis7.2.4
 
 # 网络接口配置
 server:

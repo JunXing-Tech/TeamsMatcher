@@ -37,7 +37,8 @@ import static tech.jxing.teams_matcher.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = {"http://localhost:5173"})
+// TODO @CrossOrigin(origins = {"http://1.12.221.240:5173"})
+@CrossOrigin(origins={"http://localhost:5173"})
 @Slf4j
 public class UserController {
 

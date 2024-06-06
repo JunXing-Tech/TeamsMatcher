@@ -36,7 +36,8 @@ public class RedissonConfig {
          * config.useSingleServer() 使用单机模式
          * config.useClusterServers() 使用集群模式
          */
-        config.useSingleServer().setAddress(redisAddress).setDatabase(3);
+        /** config.useSingleServer().setAddress(redisAddress).setPassword("zjxredis7.2.4").setDatabase(3); */
+        config.useSingleServer().setAddress(redisAddress).setPassword("zjxredis7.2.4").setDatabase(3);
         // 创建RedissonClient对象
         RedissonClient redissonClient = Redisson.create(config);
         // 返回RedissonClient对象
