@@ -2,6 +2,7 @@ import axios from 'axios'
 
 // 创建一个 axios 实例
 const myAxios = axios.create({
+    // TODO baseURL: 'http://1.12.221.240:8080/api'
     baseURL: 'http://localhost:8080/api' // 设置请求的基地址
 });
 // 跨域请求时也包含cookie等用户信息

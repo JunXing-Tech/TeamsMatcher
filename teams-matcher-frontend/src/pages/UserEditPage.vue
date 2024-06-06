@@ -2,7 +2,7 @@
 import {useRoute, useRouter} from "vue-router";
 import {ref} from "vue";
 import myAxios from "../plugins/myAxios.ts";
-import {showFailToast, showSuccessToast} from "vant";
+import {showFailToast} from "vant";
 import {getCurrentUser} from "../services/user.ts";
 
 // 使用vue-router的useRoute获取当前路由信息
@@ -42,15 +42,14 @@ const onSubmit = async () => {
   <van-form @submit="onSubmit">
     <!-- 表单输入域的容器，设置为内陷样式 -->
     <van-cell-group inset>
-      <!-- 动态绑定编辑用户的当前值、编辑键、编辑名称和占位符 -->
-      <!-- v-model 双向绑定输入框的值到变量 editUser.currentValue， 当用户在输入框中输入时，editUser.currentValue 的值会相应更新 -->
-      <van-field
-         v-if="editUser.editKey != 'gender'"
-         v-model="editUser.currentValue as string"
-        :name="editUser.editKey as string"
-        :label="editUser.editName as string"
-        :placeholder="`请输入${editUser.editName}`"
-      />
+
+      <van-field name="radio" v-if="editUser.editKey == 'avatarUrl'">
+        <template #input>
+          <van-cell-group inset>
+            <van-field v-model="editUser.currentValue" label="头像" placeholder="请输入头像URL" />
+          </van-cell-group>
+        </template>
+      </van-field>
 
       <van-field name="radio" label="性别" v-if="editUser.editKey == 'gender'">
         <template #input>
@@ -60,6 +59,16 @@ const onSubmit = async () => {
           </van-radio-group>
         </template>
       </van-field>
+
+      <!-- 动态绑定编辑用户的当前值、编辑键、编辑名称和占位符 -->
+      <!-- v-model 双向绑定输入框的值到变量 editUser.currentValue， 当用户在输入框中输入时，editUser.currentValue 的值会相应更新 -->
+      <van-field
+         v-if="editUser.editKey !== 'gender' && editUser.editKey !== 'avatarUrl'"
+         v-model="editUser.currentValue as string"
+        :name="editUser.editKey as string"
+        :label="editUser.editName as string"
+        :placeholder="`请输入${editUser.editName}`"
+      />
 
       <!-- 提交按钮，点击后触发表单的提交事件 -->
       <div style="margin: 16px;">
